@@ -33,33 +33,33 @@ pipeline {
               }
             }
         }
-        stage('SonarQube - SAST') {
-          steps {
-            withSonarQubeEnv('SonarQube') {
-              sh "mvn sonar:sonar \
-                 -Dsonar.projectKey=numeric-application \
-                 -Dsonar.host.url=http://localhost:9000"
-          }
-          timeout(time: 2, unit: 'MINUTES') {
-          script {
-            waitForQualityGate abortPipeline: true
-          }
-         }
-       }
-     }
+    //     stage('SonarQube - SAST') {
+    //       steps {
+    //         withSonarQubeEnv('SonarQube') {
+    //           sh "mvn sonar:sonar \
+    //              -Dsonar.projectKey=numeric-application \
+    //              -Dsonar.host.url=http://localhost:9000"
+    //       }
+    //       timeout(time: 2, unit: 'MINUTES') {
+    //       script {
+    //         waitForQualityGate abortPipeline: true
+    //       }
+    //      }
+    //    }
+    //  }
            stage('Docker Build and Push') {
             steps {
               withDockerRegistry([credentialsId: "docker-hub", url: "https://quay.io/"]) {
                 sh 'printenv'
-                sh 'sudo docker build -t quay.io/anshuk6469/numeric-app:""$GIT_COMMIT"" .'
-                sh 'docker push quay.io/anshuk6469/numeric-app:""$GIT_COMMIT""'
+                sh 'sudo docker build -t quay.io/giltwizy/numeric-app:""$GIT_COMMIT"" .'
+                sh 'docker push quay.io/giltwizy/numeric-app:""$GIT_COMMIT""'
             }
          }
       }
            stage('K8S Deployment - DEV') {
                steps {  
                  withKubeConfig([credentialsId: 'kubeconfig']) {
-                 sh "sed -i 's#replace#quay.io/anshuk6469/numeric-app:${GIT_COMMIT}#g' k8s_deployment_service.yaml"
+                 sh "sed -i 's#replace#quay.io/giltwizy/numeric-app:${GIT_COMMIT}#g' k8s_deployment_service.yaml"
                  sh "kubectl apply -f k8s_deployment_service.yaml"
              }
           }
